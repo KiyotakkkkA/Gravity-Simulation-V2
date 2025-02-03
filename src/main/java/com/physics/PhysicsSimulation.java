@@ -22,7 +22,6 @@ import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import com.physics.data.Constants;
@@ -47,43 +46,40 @@ public class PhysicsSimulation extends JFrame {
     private final ArrayList<Ball> balls = new ArrayList<>(100);
     private final ArrayList<Particle> particles = new ArrayList<>(500);
     private final JPanel canvas;
-    private double timeScale = 1.0;  // Масштаб времени
-    private static final double TIME_STEP = 0.1;  // Шаг изменения времени
+    private double timeScale = 1.0;
+    private static final double TIME_STEP = 0.1;
     private double gravity = 0.3;
-    private double spaceWarp = 1.0;  // Искривление пространства
+    private double spaceWarp = 1.0;
     private static final int FPS = 120;
-    private double energyField = 1.0;  // Энергетическое поле (влияет на упругость)
+    private double energyField = 1.0;
     private static final double ENERGY_STEP = 0.1;
     private Point mousePosition = new Point(0, 0);
-    private static final int WARP_RADIUS = 150;  // Радиус действия искривления
-    private final TimeFreeze timeFreeze = new TimeFreeze();  // Эффект остановки времени
-    private final BlackHole blackHole = new BlackHole();  // Эффект чёрной дыры
-    private final Explosion explosion = new Explosion();  // Эффект взрывов
-    private final double backgroundDistortion = 0.0;  // Искажение фона
-    private Point tooltipPosition = null;       // Позиция для всплывающей подсказки
-    private String tooltipText = null;          // Текст подсказки
+    private static final int WARP_RADIUS = 150;
+    private final TimeFreeze timeFreeze = new TimeFreeze();
+    private final BlackHole blackHole = new BlackHole();
+    private final Explosion explosion = new Explosion();
+    private final double backgroundDistortion = 0.0;
+    private Point tooltipPosition = null;
+    private String tooltipText = null;
 
-    private InfoPanel infoPanel;  // Меняем тип на InfoPanel
-    private final TimeReversal timeReversal = new TimeReversal();  // Добавляем эффект обращения времени
-    private final Matrix matrix = new Matrix();  // Эффект матрицы
-    private final TimeVortex timeVortex = new TimeVortex();  // Эффект временного вихря
-    private final GravityWave gravityWave = new GravityWave();  // Эффект гравитационных волн
-    private final Rainbow rainbow = new Rainbow();  // Эффект радуги
-    private final QuantumTunnel quantumTunnel = new QuantumTunnel();  // Эффект квантового туннелирования
+    private InfoPanel infoPanel;
+    private final TimeReversal timeReversal = new TimeReversal();
+    private final Matrix matrix = new Matrix();
+    private final TimeVortex timeVortex = new TimeVortex();
+    private final GravityWave gravityWave = new GravityWave();
+    private final Rainbow rainbow = new Rainbow();
+    private final QuantumTunnel quantumTunnel = new QuantumTunnel();
 
-    // Кэшируем часто используемые значения
     private int canvasWidth;
     private int canvasHeight;
     private final Rectangle canvasBounds = new Rectangle();
     private final Point centerPoint = new Point();
     
-    // Буферы для избежания создания новых объектов
     private final ArrayList<Ball> ballsToRemove = new ArrayList<>();
     private final ArrayList<Particle> newParticles = new ArrayList<>();
 
     private int mouseX, mouseY;
 
-    // Добавляем новые эффекты как поля класса
     private Teleport teleport;
     private Split split;
     private Magnet magnet;
@@ -96,16 +92,14 @@ public class PhysicsSimulation extends JFrame {
         Rectangle bounds = gd.getDefaultConfiguration().getBounds();
         setSize(bounds.width, bounds.height);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(true);  // Убираем рамку окна
+        setUndecorated(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Инициализируем эффекты
         teleport = new Teleport();
         split = new Split();
         magnet = new Magnet();
         slowMotion = new SlowMotion();
         
-        // Создаем InfoPanel
         infoPanel = new InfoPanel(teleport, split, magnet, slowMotion);
         
         canvas = new JPanel() {
@@ -116,37 +110,29 @@ public class PhysicsSimulation extends JFrame {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
                                    RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Рисуем динамический фон
                 drawBackground(g2d);
                 
-                // Рисуем искривление пространства
                 drawSpaceWarp(g2d);
                 
-                // Рисуем частицы
                 for (Particle particle : particles) {
                     particle.draw(g2d);
                 }
                 
-                // Рисуем шары
                 for (Ball ball : balls) {
                     ball.draw(g2d);
                 }
                 
-                // Рисуем подсказку в последнюю очередь
                 drawTooltip(g2d);
                 
-                // Отрисовываем новые эффекты
                 teleport.draw(g2d);
                 magnet.draw(g2d);
                 slowMotion.draw(g2d);
                 
-                // Сбрасываем позицию подсказки
                 tooltipPosition = null;
                 tooltipText = null;
             }
         };
         
-        // Обновляем обработчик клавиш
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -258,7 +244,6 @@ public class PhysicsSimulation extends JFrame {
             }
         });
         
-        // Добавляем отслеживание мыши для инфо-панели
         infoPanel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -266,7 +251,6 @@ public class PhysicsSimulation extends JFrame {
             }
         });
 
-        // При выходе мыши с панели сбрасываем позицию
         infoPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseExited(MouseEvent e) {
@@ -277,20 +261,17 @@ public class PhysicsSimulation extends JFrame {
         setFocusable(true);
         canvas.setBackground(Color.WHITE);
         
-        // Используем BorderLayout для размещения компонентов
         setLayout(new BorderLayout());
         
-        add(infoPanel, BorderLayout.NORTH);  // Теперь только infoPanel
+        add(infoPanel, BorderLayout.NORTH);
         add(canvas, BorderLayout.CENTER);
         
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
-                    // Левая кнопка мыши - создаем шар
                     balls.add(new Ball(e.getX(), e.getY(), 20));
                 } else if (e.getButton() == MouseEvent.BUTTON3 && explosion.isActive()) {
-                    // Правая кнопка мыши - создаем взрыв
                     explosion.createExplosion(e.getX(), e.getY(), balls, particles);
                 }
             }
@@ -326,42 +307,34 @@ public class PhysicsSimulation extends JFrame {
     private void updateForward() {
         if (!timeFreeze.shouldUpdatePhysics()) return;
 
-        // Обновляем размеры канваса только при необходимости
         updateCanvasDimensions();
 
-        // Сохраняем состояние для обращения времени
         timeReversal.saveState(balls, particles);
 
-        // Применяем эффекты перед обычным обновлением
         if (blackHole.isActive()) {
             blackHole.applyEffect(balls, canvasWidth, canvasHeight);
         }
         
-        // Обновляем временной вихрь
         timeVortex.setSpaceWarp(spaceWarp);
         timeVortex.update();
         if (timeVortex.isActive()) {
             timeVortex.applyEffect(balls, mousePosition);
         }
 
-        // Обновляем матричный эффект
         if (matrix.isActive()) {
             matrix.update();
         }
         
-        // Обновляем гравитационные волны
         if (gravityWave.isActive()) {
             gravityWave.update();
             gravityWave.applyEffect(balls, particles);
         }
 
-        // Обновляем радужный эффект
         if (rainbow.isActive()) {
             rainbow.update();
             rainbow.applyEffect(balls);
         }
 
-        // Обновляем эффект квантового туннелирования
         if (quantumTunnel.isActive()) {
             quantumTunnel.update();
             for (Ball ball : balls) {
@@ -370,25 +343,20 @@ public class PhysicsSimulation extends JFrame {
             }
         }
 
-        // Обновляем новые эффекты
         teleport.update();
         split.update();
         magnet.update();
         slowMotion.update();
         
-        // Применяем эффекты к объектам
         teleport.applyEffect(balls, particles);
         split.applyEffect(balls, particles);
         magnet.applyEffect(balls, particles);
         slowMotion.applyEffect(balls, particles);
 
-        // Оптимизированное обновление частиц
         updateParticles();
         
-        // Оптимизированное обновление шаров
         updateBalls();
         
-        // Очищаем буферы
         ballsToRemove.clear();
         newParticles.clear();
     }
@@ -420,7 +388,6 @@ public class PhysicsSimulation extends JFrame {
             }
         }
         
-        // Пакетное удаление шаров и добавление частиц
         if (!ballsToRemove.isEmpty()) {
             balls.removeAll(ballsToRemove);
             particles.addAll(newParticles);
@@ -428,21 +395,17 @@ public class PhysicsSimulation extends JFrame {
     }
 
     private void drawSpaceWarp(Graphics2D g2d) {
-        // Рисуем эффект остановки времени
         timeFreeze.draw(g2d, getWidth(), getHeight());
         
-        // Рисуем эффект чёрной дыры
         blackHole.draw(g2d, getWidth(), getHeight());
         
-        // Рисуем временной вихрь
         timeVortex.draw(g2d, mousePosition);
         
         if (spaceWarp == 1.0 || mousePosition == null) return;
         
-        // Создаем градиент для визуализации искривления
         Color warpColor = spaceWarp > 1.0 ? 
-            new Color(255, 100, 100, 50) :  // Красный для отталкивания
-            new Color(100, 100, 255, 50);   // Синий для притяжения
+            new Color(255, 100, 100, 50) :
+            new Color(100, 100, 255, 50);
             
         float alpha = Math.abs((float)(spaceWarp - 1.0)) * 0.5f;
         alpha = Math.min(alpha, 0.7f);
@@ -466,7 +429,6 @@ public class PhysicsSimulation extends JFrame {
             WARP_RADIUS * 2
         );
         
-        // Рисуем линии искривления
         g2d.setStroke(new BasicStroke(1.0f));
         g2d.setColor(new Color(warpColor.getRed(), warpColor.getGreen(), warpColor.getBlue(), 100));
         
@@ -517,12 +479,10 @@ public class PhysicsSimulation extends JFrame {
             int tooltipWidth = fm.stringWidth(tooltipText) + padding * 2;
             int tooltipHeight = fm.getHeight() + padding * 2;
 
-            // Проверяем, не выходит ли подсказка за пределы экрана
             if (tooltipPosition.x + tooltipWidth > getWidth()) {
                 tooltipPosition.x = tooltipPosition.x - tooltipWidth - 20;
             }
 
-            // Фон подсказки с градиентом
             GradientPaint gradientBg = new GradientPaint(
                 tooltipPosition.x, tooltipPosition.y,
                 new Color(0, 0, 0, 230),
@@ -533,12 +493,10 @@ public class PhysicsSimulation extends JFrame {
             g2d.fillRoundRect(tooltipPosition.x, tooltipPosition.y,
                             tooltipWidth, tooltipHeight, 10, 10);
 
-            // Рамка подсказки
             g2d.setColor(new Color(100, 100, 255, 100));
             g2d.drawRoundRect(tooltipPosition.x, tooltipPosition.y,
                             tooltipWidth, tooltipHeight, 10, 10);
 
-            // Текст подсказки
             g2d.setColor(Color.WHITE);
             g2d.drawString(tooltipText,
                           tooltipPosition.x + padding,
@@ -547,11 +505,9 @@ public class PhysicsSimulation extends JFrame {
     }
 
     private void drawBackground(Graphics2D g2d) {
-        // Кэшируем размеры
         int w = canvasWidth;
         int h = canvasHeight;
         
-        // Создаем базовый градиент фона только если нужно
         if (gravity > 0) {
             g2d.setPaint(new GradientPaint(
                 0, 0, new Color(0, 0, 50),
@@ -566,31 +522,20 @@ public class PhysicsSimulation extends JFrame {
         
         g2d.fillRect(0, 0, w, h);
 
-        // Рисуем матричный эффект
         if (matrix.isActive()) {
             matrix.draw(g2d, w, h);
         }
 
-        // Рисуем гравитационные волны
         if (gravityWave.isActive()) {
             gravityWave.draw(g2d, w, h);
         }
 
-        // Рисуем радужный эффект
         if (rainbow.isActive()) {
             rainbow.draw(g2d, w, h);
         }
 
-        // Рисуем эффект квантового туннелирования
         if (quantumTunnel.isActive()) {
             quantumTunnel.draw(g2d, w, h);
         }
-    }
-    
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            PhysicsSimulation simulation = new PhysicsSimulation();
-            simulation.setVisible(true);
-        });
     }
 }
